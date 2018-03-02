@@ -17,6 +17,7 @@ Discovery and research is still underway.
 - FInish transaction styling (Send, Recieve, Activity)
 - Explore ElectronJS Further
 - Add build tools using Electron 
+- Add Wraith Protocol Toggle
 
 Latest Update: 03/01/2018
 First working front end architecture to be completed: 03/02/2018
