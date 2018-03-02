@@ -1,9 +1,9 @@
-# xvg-wallet
+# XVG Wallet Prototype
 
-##Introduction
+XVG Wallet built with Node.js Electron and Vue.js. 
 
-XVG Wallet built with Node.js/Electron and Vue.js
-
+Not functional and will be a continuous work in progress until the first release. 
+Discovery and research is still underway. 
 
 ## To do
 
@@ -17,3 +17,6 @@ XVG Wallet built with Node.js/Electron and Vue.js
 - FInish transaction styling (Send, Recieve, Activity)
 - Explore ElectronJS Further
 - Add build tools using Electron 
+
+Latest Update: 03/01/2018
+First working front end architecture to be completed: 03/02/2018
