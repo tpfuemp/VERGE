@@ -6,6 +6,7 @@ ____   _________________________   ________ ___________
    \___/   /_______  / |____|_  / \______  //_______  /
                    \/         \/         \/         \/
 ```
+![Screenshot](static/assets/logo-variation.png)
 
 # XVG Wallet Prototype
 
@@ -30,3 +31,4 @@ Discovery and research is still underway.
 
 Latest Update: 03/01/2018
 First working front end architecture to be completed: 03/02/2018
+
