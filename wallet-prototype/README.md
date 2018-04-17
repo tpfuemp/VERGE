@@ -23,5 +23,5 @@ Discovery and research is still underway.
 - Add Wraith Protocol Toggle
 
 Latest Update: 03/01/2018
-First working front end architecture to be completed end of March 2018.
+First working front end architecture to be completed end of June 2018.
 
