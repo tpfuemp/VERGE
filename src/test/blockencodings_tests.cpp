@@ -19,6 +19,7 @@ struct RegtestingSetup : public TestingSetup {
     RegtestingSetup() : TestingSetup(CBaseChainParams::REGTEST) {}
 };
 
+// TODO: re-enable tests after runtime is stable enough
 /*BOOST_FIXTURE_TEST_SUITE(blockencodings_tests, RegtestingSetup)
 
 static CBlock BuildBlockTestCase() {
