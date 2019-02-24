@@ -248,43 +248,20 @@ public:
                 CPubKey pubKey(vchPubKey);
 
                 if (!keystore.GetKey(pubKey.GetID(), key)){
-                    LogPrintf("[SignBlock] Key not found for singature");
+                    LogPrintf("[SignBlock] Key not found for singature\n");
                     continue;
                 }
                 if (key.GetPubKey() != pubKey){
-                    LogPrintf("[SignBlock] Keys not identical (generated vs found)");
+                    LogPrintf("[SignBlock] Keys not identical (generated vs found)\n");
                     continue;
                 }
                 if(!key.Sign(GetHash(), vchBlockSig)){
-                    LogPrintf("[SignBlock] Could not sign block");
+                    LogPrintf("[SignBlock] Could not sign block\n");
                     continue;
                 }
 
-                LogPrintf("BlockSign: %s", HexStr(vchBlockSig.begin(), vchBlockSig.end()).c_str());
+                LogPrintf("BlockSign successfully done with: TX_PUBKEY\n");
                 return true;
-            } else if (whichType == TX_PUBKEYHASH) {
-                // Sign
-                valtype& vchPubKey = vSolutions[0];
-                CKey key;
-                CKeyID keyID = CKeyID(uint160(vchPubKey));
-
-                if (!keystore.GetKey(keyID, key)) {
-                    LogPrintf("[SignBlock] Key not found for singature");
-                    continue;
-                }
-                if (key.GetPubKey().GetID() != keyID){
-                    LogPrintf("[SignBlock] Keys not identical (generated vs found)");
-                    continue;
-                }
-                if(!key.Sign(GetHash(), vchBlockSig)){
-                    LogPrintf("[SignBlock] Could not sign block");
-                    continue;
-                }
-
-                LogPrintf("BlockSign: %s", HexStr(vchBlockSig.begin(), vchBlockSig.end()).c_str());
-                return true;
-            } else {
-                LogPrintf("[SignBlock] Unsupported TX type (type: %i)", whichType);
             }
         }
 
@@ -292,11 +269,10 @@ public:
         return false;
     }
 
-    // ppcoin: check block signature
-    bool CheckBlockSignature() const
+    bool CheckBlockSignature() const 
     {
         uint256 genesisBlockHash = uint256S("0x00000fc63692467faeb20cdb3b53200dc601d75bdfa1001463304cc790d77278");
-        uint256 genesisTestBlockHash = uint256S("0xfe98805b5dc9006e41d3219e62e7966dbc350a83dcdc001766d8c64f18231baf");
+        uint256 genesisTestBlockHash = uint256S("0x65b4e101cacf3e1e4f3a9237e3a74ffd1186e595d8b78fa8ea22c21ef5bf9347");
         if (GetHash() == (gArgs.IsArgSet("-testnet") ? genesisTestBlockHash : genesisBlockHash))
             return vchBlockSig.empty();
 
@@ -329,8 +305,8 @@ public:
         
         return false;
     }
-
-     std::string ToString() const;
+    
+    std::string ToString() const;
 };
 
 
