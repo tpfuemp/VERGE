@@ -152,6 +152,7 @@ VERGE_CORE_H = \
   policy/policy.h \
   policy/rbf.h \
   protocol.h \
+  psbt.h \
   pow.h \
   random.h \
   reverse_iterator.h \
@@ -202,6 +203,7 @@ VERGE_CORE_H = \
   wallet/db.h \
   wallet/feebumper.h \
   wallet/fees.h \
+  wallet/psbtwallet.h \
   wallet/rpcwallet.h \
   wallet/wallet.h \
   wallet/walletdb.h \
@@ -288,6 +290,7 @@ libverge_wallet_a_SOURCES = \
   wallet/feebumper.cpp \
   wallet/fees.cpp \
   wallet/init.cpp \
+  wallet/psbtwallet.cpp \
   wallet/rpcdump.cpp \
   wallet/rpcwallet.cpp \
   wallet/wallet.cpp \
@@ -447,6 +450,7 @@ libverge_common_a_SOURCES = \
   netaddress.cpp \
   netbase.cpp \
   policy/feerate.cpp \
+  psbt.cpp \
   protocol.cpp \
   scheduler.cpp \
   script/descriptor.cpp \
