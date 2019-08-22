@@ -81,6 +81,27 @@ namespace {
             return false;
         }
     };
+
+    struct CBlockIndexHeightComparator
+    {
+        bool operator()(const CBlockIndex *pa, const CBlockIndex *pb) const {
+            // First sort by most total height, ...
+            if (pa->nHeight > pb->nHeight) return false;
+            if (pa->nHeight < pb->nHeight) return true;
+
+            // ... then by earliest time received, ...
+            if (pa->nSequenceId < pb->nSequenceId) return false;
+            if (pa->nSequenceId > pb->nSequenceId) return true;
+
+            // Use pointer address as tie breaker (should only happen with blocks
+            // loaded from disk, as those all have id 0).
+            if (pa < pb) return false;
+            if (pa > pb) return true;
+
+            // Identical blocks.
+            return false;
+        }
+    };
 } // anon namespace
 
 enum DisconnectResult
@@ -113,7 +134,7 @@ private:
      * as good as our current tip or better. Entries may be failed, though, and pruning nodes may be
      * missing the data for the block.
      */
-    std::set<CBlockIndex*, CBlockIndexWorkComparator> setBlockIndexCandidates;
+	std::set<CBlockIndex*, CBlockIndexHeightComparator> setBlockIndexCandidates;
 
     /**
      * Every received block is assigned a unique and increasing identifier, so we
@@ -125,7 +146,9 @@ private:
     /** Decreasing counter (used by subsequent preciousblock calls). */
     int32_t nBlockReverseSequenceId = -1;
     /** chainwork for the last block that preciousblock has been applied to. */
-    arith_uint256 nLastPreciousChainwork = 0;
+    //arith_uint256 nLastPreciousChainwork = 0;
+    /** Height for the last block that preciousblock has been applied to. */
+    int nLastHeight = 0;
 
     /** In order to efficiently track invalidity of headers, we keep the set of
       * blocks which we tried to connect and found to be invalid here (ie which
@@ -2511,7 +2534,7 @@ CBlockIndex* CChainState::FindMostWorkChain() {
 
         // Find the best candidate header.
         {
-            std::set<CBlockIndex*, CBlockIndexWorkComparator>::reverse_iterator it = setBlockIndexCandidates.rbegin();
+            std::set<CBlockIndex*, CBlockIndexHeightComparator>::reverse_iterator it = setBlockIndexCandidates.rbegin();
             if (it == setBlockIndexCandidates.rend())
                 return nullptr;
             pindexNew = *it;
@@ -2532,7 +2555,7 @@ CBlockIndex* CChainState::FindMostWorkChain() {
             bool fMissingData = !(pindexTest->nStatus & BLOCK_HAVE_DATA);
             if (fFailedChain || fMissingData) {
                 // Candidate chain is not usable (either invalid or missing data)
-                if (fFailedChain && (pindexBestInvalid == nullptr || pindexNew->nChainWork > pindexBestInvalid->nChainWork))
+                if (fFailedChain && (pindexBestInvalid == nullptr || pindexNew->nHeight > pindexBestInvalid->nHeight))
                     pindexBestInvalid = pindexNew;
                 CBlockIndex *pindexFailed = pindexNew;
                 // Remove the entire chain from the set.
@@ -2796,15 +2819,15 @@ bool CChainState::PreciousBlock(CValidationState& state, const CChainParams& par
 {
     {
         LOCK(cs_main);
-        if (pindex->nChainWork < chainActive.Tip()->nChainWork) {
+        if (pindex->nHeight < chainActive.Tip()->nHeight) {
             // Nothing to do, this block is not at the tip.
             return true;
         }
-        if (chainActive.Tip()->nChainWork > nLastPreciousChainwork) {
+        if (chainActive.Tip()->nHeight > nLastHeight) {
             // The chain has been extended since the last call, reset the counter.
             nBlockReverseSequenceId = -1;
         }
-        nLastPreciousChainwork = chainActive.Tip()->nChainWork;
+        nLastHeight = chainActive.Tip()->nHeight;
         setBlockIndexCandidates.erase(pindex);
         pindex->nSequenceId = nBlockReverseSequenceId;
         if (nBlockReverseSequenceId > std::numeric_limits<int32_t>::min()) {
@@ -3166,7 +3189,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
     if (fCheckPOW && fCheckMerkleRoot)
         block.fChecked = true;
 
-    LogPrintf("Checking Block Signature: %i", fCheckBlockSignature);
+    //LogPrintf("Checking Block Signature: %i\n", fCheckBlockSignature);
     if (fCheckBlockSignature) {
         if(!block.CheckBlockSignature()) {
             return state.DoS(100, false, REJECT_INVALID, "bad-blk-signature", false, "Could not check the validity of the block signature");
