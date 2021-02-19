@@ -14,6 +14,7 @@
 #include <tinyformat.h>
 #include <uint256.h>
 #include <util/system.h>
+#include <chainparams.h>
 
 #include <vector>
 
@@ -368,10 +369,15 @@ public:
     //! maintaining the best chain and searching for the best
     arith_uint256 GetBlockWork() const
     {
+    	const Consensus::Params& params = Params().GetConsensus();
+
         // this shall return the real block work that has been done 
         // in order to create this work. Due to older code we are forced
         // to use this for now. (FIXME VIP-1)
-        return nHeight;
+    	if (nHeight < params.MULTISHIELD_SWITCH_BLOCK)
+    		return nHeight;
+    	else
+    		return nChainWork;
     }
 
     //! Build the skiplist pointer for this entry.

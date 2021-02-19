@@ -647,6 +647,13 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
     }
     result.pushKV("curtime", pblock->GetBlockTime());
     result.pushKV("bits", strprintf("%08x", pblock->nBits));
+
+    uint32_t nBitsWithMultiShield = GetNextWorkRequiredMultiShield(pindexPrev, Params().GetConsensus(), templateAlgorithm);
+    arith_uint256 hashTargetMS = arith_uint256().SetCompact(nBitsWithMultiShield);
+
+    result.pushKV("MultiShield_bits", strprintf("%08x", nBitsWithMultiShield));
+    result.pushKV("MultiShield_target", hashTargetMS.GetHex());
+
     result.pushKV("height", (int64_t)(pindexPrev->nHeight+1));
     result.pushKV("mining_disabled", !hasUsedValidMiningAlgorithm(*pblock , pindexPrev));
 

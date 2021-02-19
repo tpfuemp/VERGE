@@ -88,6 +88,18 @@ public:
         consensus.nRuleChangeActivationThreshold = 100; // 100 out of 200 blocks
         consensus.nMinerConfirmationWindow = 200;
         
+
+        consensus.MULTISHIELD_SWITCH_BLOCK = 4850000;
+
+        consensus.nAveragingInterval = 10; // 10 blocks
+        consensus.multiAlgoTargetSpacing = consensus.nPowTargetSpacing * NUM_ALGOS; // NUM_ALGOS * 30 seconds
+        consensus.nAveragingTargetTimespan = consensus.nAveragingInterval * consensus.multiAlgoTargetSpacing; // 10 * NUM_ALGOS * 15
+        consensus.nMaxAdjustDown = 16;
+        consensus.nMaxAdjustUp = 8;
+        consensus.nMinActualTimespan = consensus.nAveragingTargetTimespan * (100 - consensus.nMaxAdjustUp) / 100;
+        consensus.nMaxActualTimespan = consensus.nAveragingTargetTimespan * (100 + consensus.nMaxAdjustDown) / 100;
+        consensus.nLocalTargetAdjustment = 4; //target adjustment per algo
+
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008

@@ -15,6 +15,8 @@ class CBlockHeader;
 class CBlockIndex;
 class uint256;
 
+unsigned int InitialDifficulty(const Consensus::Params& params, int algo);
+unsigned int GetNextWorkRequiredMultiShield(const CBlockIndex* pindexLast, const Consensus::Params&, int algo);
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo, const Consensus::Params&);
 // unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params&);
 

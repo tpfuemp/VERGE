@@ -14,9 +14,95 @@
 #include <chainparamsbase.h>
 #include <chainparams.h>
 
+inline unsigned int PowLimit(const Consensus::Params& params)
+{
+    return UintToArith256(params.powLimit).GetCompact();
+}
+
+unsigned int InitialDifficulty(const Consensus::Params& params, int algo)
+{
+    const auto& it = params.initialTarget.find(algo);
+    if (it == params.initialTarget.end())
+        return PowLimit(params);
+    return UintToArith256(it->second).GetCompact();
+}
+
+const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, const Consensus::Params& params, int algo)
+{
+    for (; pindex; pindex = pindex->pprev)
+    {
+        if (pindex->GetAlgo() != algo)
+            continue;
+
+        return pindex;
+    }
+    return nullptr;
+}
+
+unsigned int GetNextWorkRequiredMultiShield(const CBlockIndex* pindexLast, const Consensus::Params& params, int algo)
+{
+	// find first block in averaging interval
+	// Go back by what we want to be nAveragingInterval blocks per algo
+	const CBlockIndex* pindexFirst = pindexLast;
+	for (int i = 0; pindexFirst && i < NUM_ALGOS*params.nAveragingInterval; i++)
+	{
+		pindexFirst = pindexFirst->pprev;
+	}
+
+	const CBlockIndex* pindexPrevAlgo = GetLastBlockIndexForAlgo(pindexLast, params, algo);
+	if (pindexPrevAlgo == nullptr || pindexFirst == nullptr)
+	{
+		return InitialDifficulty(params, algo);
+	}
+
+	// Limit adjustment step
+	// Use medians to prevent time-warp attacks
+	int64_t nActualTimespan = pindexLast-> GetMedianTimePast() - pindexFirst->GetMedianTimePast();
+	nActualTimespan = params.nAveragingTargetTimespan + (nActualTimespan - params.nAveragingTargetTimespan)/4;
+
+	if (nActualTimespan < params.nMinActualTimespan)
+		nActualTimespan = params.nMinActualTimespan;
+	if (nActualTimespan > params.nMaxActualTimespan)
+		nActualTimespan = params.nMaxActualTimespan;
+
+	//Global retarget
+	arith_uint256 bnNew;
+	bnNew.SetCompact(pindexPrevAlgo->nBits);
+
+	bnNew *= nActualTimespan;
+	bnNew /= params.nAveragingTargetTimespan;
+
+	//Per-algo retarget
+	int nAdjustments = pindexPrevAlgo->nHeight + NUM_ALGOS - 1 - pindexLast->nHeight;
+	if (nAdjustments > 0)
+	{
+		for (int i = 0; i < nAdjustments; i++)
+		{
+			bnNew *= 100;
+			bnNew /= (100 + params.nLocalTargetAdjustment);
+		}
+	}
+	else if (nAdjustments < 0)//make it easier
+	{
+		for (int i = 0; i < -nAdjustments; i++)
+		{
+			bnNew *= (100 + params.nLocalTargetAdjustment);
+			bnNew /= 100;
+		}
+	}
+
+	if (bnNew > UintToArith256(params.powLimit))
+	{
+		bnNew = UintToArith256(params.powLimit);
+	}
+
+	return bnNew.GetCompact();
+}
+
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo, const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
+
     // unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
     // Only change once per difficulty adjustment interval
@@ -49,7 +135,11 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     // assert(pindexFirst);
 
     // return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
-    return GetNextTargetRequired(pindexLast, algo, params);
+	if(pindexLast->nHeight < params.MULTISHIELD_SWITCH_BLOCK)
+		return GetNextTargetRequired(pindexLast, algo, params);
+	else
+		return GetNextWorkRequiredMultiShield(pindexLast, params, algo);
+
 }
 
 // unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)

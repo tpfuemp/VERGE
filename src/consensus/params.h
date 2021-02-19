@@ -66,6 +66,18 @@ struct Params {
     int ForkHeight;
     int CLOCK_DRIFT_FORK;
 
+    /** Block height at which multishield retarget becomes active */
+    int MULTISHIELD_SWITCH_BLOCK;
+
+    int64_t nAveragingInterval;
+    int64_t multiAlgoTargetSpacing;
+	int64_t nAveragingTargetTimespan;
+	int64_t nMaxAdjustDown;
+	int64_t nMaxAdjustUp;
+	int64_t nMinActualTimespan;
+	int64_t nMaxActualTimespan;
+	int64_t nLocalTargetAdjustment;
+	int64_t nLocalDifficultyAdjustment;
 
     /**
      * Minimum blocks including miner confirmation of the total of 2016 blocks in a retargeting period,
@@ -77,6 +89,7 @@ struct Params {
     BIP9Deployment vDeployments[MAX_VERSION_BITS_DEPLOYMENTS];
     /** Proof of work parameters */
     uint256 powLimit;
+    std::map<int, uint256> initialTarget;
     bool fPowAllowMinDifficultyBlocks;
     bool fPowNoRetargeting;
     int64_t nPowTargetSpacing;
